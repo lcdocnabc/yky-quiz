@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#2563eb" />
+  <title>应知应会 · 题库复习</title>
+  <script>
+    // 同步强制注销任何残留 Service Worker（放在最前，先于一切缓存脚本）
+    (function () {
+      try {
+        if ('serviceWorker' in navigator) {
+          var regs = navigator.serviceWorker.getRegistrations();
+          if (regs && regs.then) {
+            regs.then(function (list) { list.forEach(function (r) { try { r.unregister(); } catch (e) {} }); });
+          }
+        }
+      } catch (e) {}
+      // 阻止浏览器从 bfcache/磁盘缓存复用本页
+      if (window.performance && performance.getEntriesByType) {
+        try { window.addEventListener('pageshow', function (e) { if (e.persisted) location.reload(); }); } catch (e) {}
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="style.css?v=5&t=20260821c" />
+</head>
+<body>
+  <header class="top">
+    <div class="top-inner">
+      <div class="logo">
+        <span class="badge">应</span>
+        <div>应知应会<small>离线题库 · 记忆曲线复习</small></div>
+      </div>
+      <button class="theme-btn" id="theme-btn" title="切换暗色">🌙</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="view-bank"></section>
+    <section id="view-quiz" class="hidden"></section>
+    <section id="view-review" class="hidden"></section>
+    <section id="view-stats" class="hidden"></section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button data-tab="bank" class="active"><span>📚</span>题库</button>
+    <button data-tab="quiz"><span>✍️</span>练习</button>
+    <button data-tab="review"><span>🔁</span>复习</button>
+    <button data-tab="stats"><span>📊</span>统计</button>
+  </nav>
+
+  <script>
+    // 动态时间戳，确保每次刷新都重新加载 js/css（开发和预览阶段避免缓存干扰）
+    var _ts = Date.now();
+    document.write('<script src="xlsx.full.min.js?v=5&t=' + _ts + '"><\/script>');
+    document.write('<script src="bank.js?v=5&t=' + _ts + '"><\/script>');
+    document.write('<script src="app.js?v=5&t=' + _ts + '"><\/script>');
+  </script>
+</body>
+</html>
