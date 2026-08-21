@@ -108,7 +108,7 @@ textarea { resize: vertical; }
 .stem-seg { font-size: 16px; }
 .fill-input {
   font-size: 15px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
-  background: var(--card); color: var(--text); min-width: 44px; width: 140px; text-align: center;
+  background: var(--card); color: var(--text); min-width: 44px; width: auto; max-width: 140px; text-align: center;
 }
 .fill-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 2px var(--bad-soft); }
 .fill-input.fi-ok { border-color: var(--ok); background: var(--ok-soft); }

@@ -179,7 +179,7 @@
         <div class="row">
           <button class="btn" id="bk-import">导入题库</button>
         </div>
-        <input type="file" id="bk-file" accept=".xlsx,.xls,.csv,text/csv" class="hidden" />
+        <input type="file" id="bk-file" accept="*/*" class="hidden" />
       </div>
       <div id="bk-list" class="list"></div>`;
     const draw = () => {
@@ -252,7 +252,7 @@
           <button class="btn ghost" id="bd-imp">导入覆盖</button>
           <button class="btn ghost" id="bd-del" style="color:var(--bad)">删除题库</button>
         </div>
-        <input type="file" id="bd-file" accept=".xlsx,.xls,.csv,text/csv" class="hidden" />
+        <input type="file" id="bd-file" accept="*/*" class="hidden" />
       </div>
       <div id="bd-editor"></div>`;
     $("#bk-back", root).addEventListener("click", () => { bankView = { mode: "list", id: null }; renderBank(); });
@@ -686,7 +686,23 @@
   function importFileAsBanks(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
-    const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+    // 不再靠文件名/扩展名判断格式（微信转发常截断扩展名），改读文件头魔数
+    const isExcel = (buf) => {
+      if (!buf || buf.byteLength < 4) return false;
+      const u = new Uint8Array(buf, 0, 4);
+      // xlsx: PK\x03\x04 或 PK\x05\x06; xls: D0CF11E0A1B11AE1
+      if (u[0] === 0x50 && u[1] === 0x4B) return true;
+      if (u[0] === 0xD0 && u[1] === 0xCF && u[2] === 0x11 && u[3] === 0xE0) return true;
+      return false;
+    };
+    const decodeText = (buf) => {
+      try { return new TextDecoder("utf-8").decode(buf); } catch (e) {}
+      return "";
+    };
+    const decodeGbk = (buf) => {
+      try { return new TextDecoder("gbk").decode(buf); } catch (e) {}
+      return "";
+    };
     const finish = async (banksData) => {
       if (!banksData || !banksData.length) { toast("未解析到题目，请检查文件格式"); e.target.value = ""; return; }
       let totalItems = 0, newCount = 0, coverCount = 0;
@@ -710,28 +726,29 @@
       toast(`已导入 ${banksData.length} 个题库、共 ${totalItems} 题（新建${newCount}/覆盖${coverCount}）`);
       renderBank(); renderStats();
     };
-    if (isExcel) {
-      if (!window.XLSX) { toast("表格解析库未加载，请重试或改用CSV"); e.target.value = ""; return; }
-      const reader = new FileReader();
-      reader.onload = () => {
-        try { finish(Y.parseXlsx(reader.result)); }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const buf = reader.result;
+      if (isExcel(buf)) {
+        if (!window.XLSX) { toast("表格解析库未加载，请重试或改用CSV"); e.target.value = ""; return; }
+        try { finish(Y.parseXlsx(buf)); }
         catch (err) { toast("Excel 解析失败：" + (err.message || err)); }
         e.target.value = "";
-      };
-      reader.onerror = () => { toast("读取文件失败"); e.target.value = ""; };
-      reader.readAsArrayBuffer(file);
-    } else {
-      const reader = new FileReader();
-      reader.onload = () => {
-        let banksData;
-        try { banksData = Y.parseCsvBanks(reader.result, file.name); }
-        catch (err) { banksData = null; }
-        if (!banksData || !banksData.length) { toast("未解析到题目，请检查CSV格式"); e.target.value = ""; return; }
-        finish(banksData);
-      };
-      reader.onerror = () => { toast("读取文件失败"); e.target.value = ""; };
-      reader.readAsText(file, "UTF-8");
-    }
+        return;
+      }
+      // 非 Excel 一律尝试当 CSV 解析，依次试 UTF-8 / GBK
+      let text = decodeText(buf);
+      let banksData;
+      try { banksData = Y.parseCsvBanks(text, file.name); } catch (err) { banksData = null; }
+      if (!banksData || !banksData.length) {
+        text = decodeGbk(buf);
+        if (text) try { banksData = Y.parseCsvBanks(text, file.name); } catch (err) { banksData = null; }
+      }
+      if (!banksData || !banksData.length) { toast("未解析到题目，请检查文件格式"); e.target.value = ""; return; }
+      finish(banksData);
+    };
+    reader.onerror = () => { toast("读取文件失败"); e.target.value = ""; };
+    reader.readAsArrayBuffer(file);
   }
   function findBankName(name) { return BANKS.find((b) => b.name === name) || null; }
 
