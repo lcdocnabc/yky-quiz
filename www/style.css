@@ -104,11 +104,11 @@ textarea { resize: vertical; }
 .badge-cat { font-size: 12px; padding: 3px 9px; border-radius: 20px; background: var(--blue-soft); color: var(--blue); }
 .q-idx { margin-left: auto; font-size: 12px; color: var(--muted); }
 .q-stem { font-size: 18px; font-weight: 700; line-height: 1.5; margin-bottom: 16px; }
-.fill-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 4px; line-height: 2.2; }
+.fill-wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 3px; line-height: 1.8; }
 .stem-seg { font-size: 16px; }
 .fill-input {
-  font-size: 16px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px;
-  background: var(--card); color: var(--text); min-width: 90px; width: 120px; text-align: center;
+  font-size: 15px; padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--card); color: var(--text); min-width: 44px; width: 140px; text-align: center;
 }
 .fill-input:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 2px var(--bad-soft); }
 .fill-input.fi-ok { border-color: var(--ok); background: var(--ok-soft); }
